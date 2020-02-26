@@ -17,7 +17,7 @@
   - { role: install_php, when ansible_os_family == 'Debian' }
   - { role: install_apache, when ansible_os_family == 'Debian' }
   - { role: install_mysql, when ansible_os_family == 'Debian' }
-  - { role: iptables, when ansible_os_family == 'Debian' }    #>>>>>D`NOT USE NOW!!!<<<<<
+  - { role: iptables, when ansible_os_family == 'Debian' }    #>>>>>D`NOT USE !!!<<<<<
   tasks:
   - name: Restart NGINX
     service: name=nginx state=restarted enabled=yes
