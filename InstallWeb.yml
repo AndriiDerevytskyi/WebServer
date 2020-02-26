@@ -1,0 +1,50 @@
+---
+- name: Insall NGINX proxy to APACHE2 with PHP plus MySQL DB
+  hosts: all
+  become: yes
+  any_errors_fatal: true
+
+  vars:
+    PHP_VERSION: 7.2
+    MYSQL_ROOT_PASS: Qq9r4XpNz3HX
+    MYSQL_DB_USER_PASS: A5QXp9L6wbSb
+    MYSQL_DB_USER: shooters_main # <<== MYSQL_DB_USER with all privileges on MYSQL_DB_NAME
+    MYSQL_DB_NAME: Shooters_main_db
+    VIRTUAL_HOST_NAME: shooters.global # <<== domain for your app/project/site to configure virtual hosts
+
+  roles:
+  - { role: install_nginx, when ansible_os_family == 'Debian' }
+  - { role: install_php, when ansible_os_family == 'Debian' }
+  - { role: install_apache, when ansible_os_family == 'Debian' }
+  - { role: install_mysql, when ansible_os_family == 'Debian' }
+  - { role: iptables, when ansible_os_family == 'Debian' }    #>>>>>D`NOT USE NOW!!!<<<<<
+  tasks:
+  - name: Restart NGINX
+    service: name=nginx state=restarted enabled=yes
+  - name: Restart Apache2
+    service: name=apache2 state=restarted enabled=yes
+  - name: Restart PHP-fpm
+    service: name=php{{PHP_VERSION}}-fpm state=restarted enabled=yes
+  - name: Restart MySQL
+    service: name=mysql state=restarted enabled=yes
+  - name: Restart Memcached
+    service: name=memcached state=restarted enabled=yes
+  - name: Clear Memcached cache
+    shell: echo "flush_all" | nc -w 2 localhost 11211
+  - name: Restart Fail2ban
+    service: name=fail2ban state=restarted enabled=yes
+
+  - name: Show Listen ports in server
+    shell: netstat -ntulp
+    register: ntulp
+  - debug:
+      var: ntulp.stdout_lines
+
+  - name: Show IPtables -S
+    shell: iptables -S
+    register: iptables
+  - debug:
+      var: iptables.stdout_lines
+      
+  - name: Web server configured successfully. Read README in ~/README_{{ ansible_date_time.date }}
+    template: src=./README.j2 dest=~/README_{{ ansible_date_time.date }} owner=www-data mode=0755
