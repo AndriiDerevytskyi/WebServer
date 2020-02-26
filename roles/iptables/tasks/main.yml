@@ -1,0 +1,81 @@
+---
+# tasks file for iptables
+- name: Flush existing firewall rules
+  iptables:
+    flush: true
+
+- name: Set the policy for the FORWARD chain to DROP
+  iptables:
+    chain: FORWARD
+    policy: DROP
+
+- name: Set the policy for the INPUT chain to ACCEPT
+  iptables:
+    chain: INPUT
+    policy: ACCEPT
+
+- name: Set the policy for the OUTPUT chain to ACCEPT
+  iptables:
+    chain: OUTPUT
+    policy: ACCEPT
+
+- name: Allow all loopback traffic
+  iptables:
+    action: append
+    chain: INPUT
+    in_interface: lo
+    jump: ACCEPT
+
+- name: Allow port ping traffic
+  iptables:
+    chain: INPUT
+    jump: ACCEPT
+    protocol: icmp
+
+- name: Allow port 22/SSH traffic
+  iptables:
+    chain: INPUT
+    destination_port: '22'
+    jump: ACCEPT
+    protocol: tcp
+
+- name: Allow port 80/HTTP traffic
+  iptables:
+    chain: INPUT
+    destination_port: '80'
+    jump: ACCEPT
+    protocol: tcp
+
+- name: Allow port 443/HTTPS traffic
+  iptables:
+    chain: INPUT
+    destination_port: '443'
+    jump: ACCEPT
+    protocol: tcp
+
+#================= Install iptables-persisten and fail2ban ====================================
+- name: Install `iptables-persistent`
+  apt:
+    pkg: iptables-persistent
+    update_cache: yes
+
+- name: Install the `fail2ban` package
+  apt:
+    pkg: fail2ban
+    update_cache: yes
+
+- name: Override some basic fail2ban configurations
+  copy:
+    src: ../templates/jail.local.j2
+    dest: /etc/fail2ban/jail.local
+    owner: root
+    group: root
+    mode: 0644
+
+- name: DROP any traffic without rule
+  iptables:
+    chain: INPUT
+    jump: DROP
+
+- name: Save IPtables
+  shell: iptables-save > /etc/iptables/rules.v4 && ip6tables-save > /etc/iptables/rules.v6

@@ -1,0 +1,44 @@
+server {
+
+        listen 80;
+        server_name  {{ VIRTUAL_HOST_NAME }} www.{{ VIRTUAL_HOST_NAME }};
+        root /var/www/{{ VIRTUAL_HOST_NAME }};
+        index index.php index.html index.htm;
+        return 301 https://{{ VIRTUAL_HOST_NAME }}$request_uri;
+
+        access_log /var/www/{{ VIRTUAL_HOST_NAME }}/log/nginx/access_log;
+        error_log /var/www/{{ VIRTUAL_HOST_NAME }}/log/nginx/error_log;
+
+}
+
+server {
+
+        listen 443 ssl;
+        server_name  {{ VIRTUAL_HOST_NAME }} www.{{ VIRTUAL_HOST_NAME }};
+        server_tokens off;
+        root /var/www/{{ VIRTUAL_HOST_NAME }};
+        index index.php index.html index.htm;
+
+## Use CertBot to install SSL certificate witch command:
+##
+## $ certbot certonly --nginx --register-unsafely-without-email
+
+        ssl on;
+        ssl_certificate /etc/letsencrypt/live/{{ VIRTUAL_HOST_NAME }}/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/{{ VIRTUAL_HOST_NAME }}/privkey.pem;
+        include /etc/letsencrypt/options-ssl-nginx.conf;
+        ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+       location / {
+                proxy_pass http://127.0.1.1:8080;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $remote_addr;
+
+        }
+
+        location ~ /\.ht {
+                       deny all;
+        }
+
+}

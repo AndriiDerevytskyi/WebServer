@@ -1,0 +1,57 @@
+---
+- name: Apt update && apt upgrade
+  apt:
+    update_cache: yes
+    upgrade: dist
+
+- name: Install NGINX
+  apt: name=nginx state=present update_cache=yes
+
+- name: Stop NGINX
+  service: name=nginx state=stopped
+
+- name: Change default config
+  copy:
+    src: ./default
+    dest: /etc/nginx/sites-available/default
+
+- name: Remove index.html file
+  file:
+    path: /var/www/html/index.html
+    state: absent
+
+- name: Copy index.php with PHP info to /var/www/html    
+  copy:
+    src: ./index.php
+    dest: /var/www/html/index.php
+
+- name: Create Virtual host for {{VIRTUAL_HOST_NAME}} in HTTP
+  template: src=templates/virtual_host_80.j2 dest=/etc/nginx/sites-available/{{VIRTUAL_HOST_NAME}}.conf owner=www-data mode=0755
+
+- name: Create Virtual host for {{VIRTUAL_HOST_NAME}} in HTTPS
+  template: src=templates/virtual_host_443.j2 dest=/etc/nginx/sites-available/{{VIRTUAL_HOST_NAME}}_SSL.conf owner=www-data mode=0755
+
+- name: Create a symbolic link in sites-enabled for {{VIRTUAL_HOST_NAME}} in HTTP (default)
+  file:
+    src: /etc/nginx/sites-available/{{VIRTUAL_HOST_NAME}}.conf
+    dest: /etc/nginx/sites-enabled/{{VIRTUAL_HOST_NAME}}.conf
+    owner: www-data
+    group: www-data
+    state: link
+
+- name: Create a log directory NGINX for {{VIRTUAL_HOST_NAME}}
+  file:
+    path: /var/www/{{VIRTUAL_HOST_NAME}}/log/nginx
+    state: directory
+    mode: '0755'
+
+- name: Create a log directory Apache2 for {{VIRTUAL_HOST_NAME}}
+  file:
+    path: /var/www/{{VIRTUAL_HOST_NAME}}/log/apache
+    state: directory
+    mode: '0755'
+
+- name: Copy index.php with PHP info to /var/www/{{VIRTUAL_HOST_NAME}}
+  copy:
+    src: ./index.php
+    dest: /var/www/{{VIRTUAL_HOST_NAME}}/index.php

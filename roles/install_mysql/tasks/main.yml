@@ -1,0 +1,49 @@
+---
+- name: Install MySQL-server
+  apt: name=mysql-server state=present update_cache=yes
+
+- name: Start the MySQL service
+  service: name=mysql state=started
+
+- name: Install pithon pip
+  apt:
+    pkg:
+      - python3-pip
+      - python-pip
+
+- name: Install PyMySQL
+  pip:
+     name: PyMySQL
+
+- name: Copy .my.cnf file with root password credentials
+  template: src=templates/.my.cnf dest=/root/.my.cnf owner=root mode=0600
+
+- name: Update mysql root password for all root accounts
+  mysql_user: name=root host=localhost password={{MYSQL_ROOT_PASS}}
+  with_items:
+    - 127.0.0.1
+    - ::1
+    - localhost
+
+- name: Delete database with name 'test'
+  mysql_db:
+    name: test
+    state: absent
+
+- name: Create database with name {{MYSQL_DB_NAME}}
+  mysql_db:
+    name: "{{MYSQL_DB_NAME}}"
+    state: present
+
+- name: Create {{MYSQL_DB_USER}} user with all privileges on {{MYSQL_DB_NAME}}
+  mysql_user: user={{MYSQL_DB_USER}} host="%" password={{MYSQL_DB_USER_PASS}} priv={{MYSQL_DB_NAME}}.*:ALL,GRANT
+
+- name: Ensure anonymous users are not in the database
+  mysql_user: user='' host=$item state=absent
+  with_items:
+      - 127.0.0.1
+      - ::1
+      - localhost
+
+- name: Stop MySQL
+  service: name=mysql state=stopped

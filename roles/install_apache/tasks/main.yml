@@ -1,0 +1,73 @@
+---
+# tasks file for install_nginx
+- name: add PHP repository for Libapache2
+  apt_repository:
+    repo: ppa:ondrej/php
+
+- name: Install Apache2
+  apt:
+    pkg:
+      - apache2
+      - libapache2-mod-php{{PHP_VERSION}}
+      - memcached
+      - php-memcached
+    update_cache: yes
+
+- name: Stop Apache2
+  service: name=apache2 state=stopped
+- name: Stop Memcached
+  service: name=memcached state=stopped
+
+- name: Change listen port to => 8080
+  copy:
+     src: ports.conf
+     dest: /etc/apache2/ports.conf
+
+- name: Change 000-default.conf port to => 8080
+  copy:
+    src: ./000-default.conf
+    dest: /etc/apache2/sites-available/000-default.conf
+
+- name: Add index.php for index in site root folder
+  copy:
+     src: dir.conf
+     dest: /etc/apache2/mods-available/dir.conf
+
+- name: Change apache2.conf
+  copy:
+     src: apache2.conf
+     dest: /etc/apache2/apache2.conf
+
+- name: Apache2 remoute IP
+  copy:
+     src: remoteip.conf
+     dest: /etc/apache2/mods-available/remoteip.conf
+
+- name: Chmod on /var/www for www-data user
+  file:
+    path: /var/www
+    state: directory
+    recurse: yes
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: Disable Apache2 mpm_event modules
+  shell: a2dismod mpm_event
+  ignore_errors: yes
+   #when: " {{PHP_VERSION}} " >= 7.0
+
+- name: Enable Apache2 moduls
+  shell: a2enmod mpm_prefork && a2enmod php{{PHP_VERSION}} && a2enmod setenvif && a2enmod remoteip
+  ignore_errors: yes
+
+- name: Create Virtual host Apache2 for {{VIRTUAL_HOST_NAME}}
+  template: src=templates/virtual_host_80.j2 dest=/etc/apache2/sites-available/{{VIRTUAL_HOST_NAME}}.conf owner=www-data mode=0755
+
+- name: Create a symbolic link in sites-enabled for {{VIRTUAL_HOST_NAME}} in HTTP (default)
+  file:
+    src: /etc/apache2/sites-available/{{VIRTUAL_HOST_NAME}}.conf
+    dest: /etc/apache2cd/sites-enabled/{{VIRTUAL_HOST_NAME}}.conf
+    owner: www-data
+    group: www-data
+    state: link

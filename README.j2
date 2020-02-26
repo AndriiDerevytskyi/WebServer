@@ -1,0 +1,21 @@
+Web server configured successfully.
+{{ ansible_date_time.date }} in {{ ansible_date_time.time }}
+
+You have:
+- PHP {{PHP_VERSION}}
+- Memcached
+- NGINX
+- Apache2
+- MySQL
+   - Root password is: {{MYSQL_ROOT_PASS}}
+   - MySQL user: {{MYSQL_DB_USER}}
+   - Password for {{MYSQL_DB_USER}} is: {{MYSQL_DB_USER_PASS}}
+   - {{MYSQL_DB_USER}} have all privileges on {{MYSQL_DB_NAME}}
+
+Virtual host is : {{VIRTUAL_HOST_NAME}}
+
+IPtables -S:
+{{iptables.stdout_lines}}
+
+Netstat -ntulp:
+{{ntulp.stdout_lines}}
