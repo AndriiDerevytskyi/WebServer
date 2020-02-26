@@ -1,2 +1,2 @@
 [TARGET]
-Target_srv ansible_host=138.201.159.153  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa.pub
+Target_srv ansible_host=34.68.11.87   ansible_user=ozzzy ansible_ssh_private_key_file=~/.ssh/id_rsa.pub

@@ -48,4 +48,4 @@
       var: iptables.stdout_lines
 
   - name: Web server configured successfully. Read README in ~/README_{{ ansible_date_time.date }}
-    template: src=./template/README.j2 dest=~/README_{{ ansible_date_time.date }} owner=www-data mode=0755
+    template: src=./templates/README.j2 dest=~/README_{{ ansible_date_time.date }} owner=www-data mode=0755

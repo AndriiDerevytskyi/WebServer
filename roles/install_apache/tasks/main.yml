@@ -67,7 +67,7 @@
 - name: Create a symbolic link in sites-enabled for {{VIRTUAL_HOST_NAME}} in HTTP (default)
   file:
     src: /etc/apache2/sites-available/{{VIRTUAL_HOST_NAME}}.conf
-    dest: /etc/apache2cd/sites-enabled/{{VIRTUAL_HOST_NAME}}.conf
+    dest: /etc/apache2/sites-enabled/{{VIRTUAL_HOST_NAME}}.conf
     owner: www-data
     group: www-data
     state: link

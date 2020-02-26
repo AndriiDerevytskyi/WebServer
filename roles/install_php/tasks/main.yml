@@ -19,5 +19,5 @@
       - php{{ PHP_VERSION }}-xml
       - php{{ PHP_VERSION }}-mysqli
       - php{{ PHP_VERSION }}-cli
-      - php{{ PHP_VERSION }}-mail #in Test
+
     update_cache: yes
