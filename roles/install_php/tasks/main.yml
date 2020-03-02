@@ -19,5 +19,6 @@
       - php{{ PHP_VERSION }}-xml
       - php{{ PHP_VERSION }}-mysqli
       - php{{ PHP_VERSION }}-cli
+      - php{{ PHP_VERSION }}-curl
 
     update_cache: yes
